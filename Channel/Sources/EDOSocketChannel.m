@@ -154,9 +154,7 @@
     size_t payloadSize = EDOGetPayloadSizeFromFrameData(data);
     if (payloadSize > 0) {
       remainingDataSize = payloadSize;
-      if (![self readDispatchIOWithDataSize:remainingDataSize handler:dataHandler] && handler) {
-        handler(self, nil, nil);
-      }
+      dispatch_io_read(channel, 0, payloadSize, handlerQueue, dataHandler);
     } else {
       // Close the channel on errors and closed sockets.
       if (error != 0 || payloadSize == 0) {
@@ -172,7 +170,7 @@
     }
   };
 
-  [self readDispatchIOWithDataSize:EDOGetPayloadHeaderSize() handler:frameHandler];
+  dispatch_io_read(channel, 0, EDOGetPayloadHeaderSize(), handlerQueue, frameHandler);
 }
 
 /** @see -[EDOChannel isValid] */
@@ -189,25 +187,6 @@
       dispatch_io_close(_channel, 0);
       _channel = NULL;
     }
-  }
-}
-
-#pragma mark - Private
-
-/**
- * Atomically checks the validity of the socket channel and calls dispatch_io_read if it's valid.
- *
- * @param dataSize The number of bytes to be read through dispatch_io_read.
- * @param handler  The handler to process the data read by dispatch_io_read.
- *
- * @return @c YES if dispatch_io_read is called; @c NO otherwise.
- */
-- (BOOL)readDispatchIOWithDataSize:(size_t)dataSize handler:(dispatch_io_handler_t)handler {
-  @synchronized(self) {
-    if (_channel) {
-      dispatch_io_read(_channel, 0, dataSize, _handlerQueue, handler);
-    }
-    return _channel != NULL;
   }
 }
 
