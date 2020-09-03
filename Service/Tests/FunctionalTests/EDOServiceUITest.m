@@ -26,7 +26,7 @@
 #import "Service/Sources/EDOHostService.h"
 #import "Service/Sources/EDORemoteException.h"
 #import "Service/Sources/EDOServiceError.h"
-#import "Service/Sources/NSObject+EDOBlockedType.h"
+#import "Service/Sources/NSObject+EDOBlacklistedType.h"
 #import "Service/Sources/NSObject+EDOValueObject.h"
 #import "Service/Tests/FunctionalTests/EDOTestDummyInTest.h"
 #import "Service/Tests/TestsBundle/EDOTestClassDummy.h"
@@ -116,9 +116,10 @@ static NSString *const kTestServiceName = @"com.google.edo.testService";
                                NSInternalInconsistencyException);
 }
 
-- (void)testBlockedParameter {
+- (void)testBlacklistedParameter {
   [self launchApplicationWithPort:EDOTEST_APP_SERVICE_PORT initValue:0];
-  EDOBlockedTestDummyInTest *testDummy = [[EDOBlockedTestDummyInTest alloc] initWithValue:0];
+  EDOBlacklistedTestDummyInTest *testDummy =
+      [[EDOBlacklistedTestDummyInTest alloc] initWithValue:0];
   EDOHostService *service = [EDOHostService serviceWithPort:2234
                                                  rootObject:testDummy
                                                       queue:dispatch_get_main_queue()];
@@ -127,7 +128,7 @@ static NSString *const kTestServiceName = @"com.google.edo.testService";
   XCTAssertNoThrow([remoteDummy callBackToTest:testDummy withValue:0]);
   XCTAssertNoThrow([remoteDummy createEDOWithPort:2234]);
   XCTAssertNoThrow([remoteDummy selWithInOutEDO:&testDummy]);
-  [EDOBlockedTestDummyInTest edo_disallowRemoteInvocation];
+  [EDOBlacklistedTestDummyInTest edo_disallowRemoteInvocation];
   XCTAssertThrows([remoteDummy callBackToTest:testDummy withValue:0]);
   XCTAssertThrows([remoteDummy createEDOWithPort:2234]);
   XCTAssertThrows([remoteDummy selWithInOutEDO:&testDummy]);
