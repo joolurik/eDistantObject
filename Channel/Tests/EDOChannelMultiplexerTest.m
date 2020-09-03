@@ -134,7 +134,6 @@
 }
 
 - (void)testCanFetchChannelWithHostPortConcurrently {
-  dispatch_queue_t testQueue = dispatch_queue_create("com.google.edo.test", DISPATCH_QUEUE_SERIAL);
   int numOfChannels = 200;
   EDOChannelMultiplexer *multiplexer = [[EDOChannelMultiplexer alloc] init];
   [multiplexer start:nil error:nil];
@@ -159,9 +158,7 @@
         XCTAssertEqualObjects(port, receivedPort);
         [channel sendData:deviceIdentifier withCompletionHandler:nil];
       }];
-      dispatch_async(testQueue, ^{
-        savedChannels[idx] = channel;
-      });
+      savedChannels[idx] = channel;
     });
   });
 
@@ -178,7 +175,6 @@
 }
 
 - (void)testCanFetchChannelWithBothCorrectAndIncorrectAckConcurrently {
-  dispatch_queue_t testQueue = dispatch_queue_create("com.google.edo.test", DISPATCH_QUEUE_SERIAL);
   int numOfChannels = 30;
   EDOChannelMultiplexer *multiplexer = [[EDOChannelMultiplexer alloc] init];
   [multiplexer start:nil error:nil];
@@ -188,7 +184,6 @@
   NSData *deviceInfo = [@"info" dataUsingEncoding:NSUTF8StringEncoding];
   NSData *incorrectAck = [@"deadbeef" dataUsingEncoding:NSUTF8StringEncoding];
   XCTestExpectation *expectChannelCreated = [self expectationWithDescription:@"Channels created."];
-  expectChannelCreated.expectedFulfillmentCount = numOfChannels;
 
   NS_VALID_UNTIL_END_OF_SCOPE NSMutableArray<id> *savedChannels = [[NSMutableArray alloc] init];
   // Add the placeholders first.
@@ -226,11 +221,9 @@
           [channel sendData:deviceIdentifier withCompletionHandler:nil];
         }];
       }
-      dispatch_async(testQueue, ^{
-        savedChannels[idx] = channel;
-        [expectChannelCreated fulfill];
-      });
+      savedChannels[idx] = channel;
     });
+    [expectChannelCreated fulfill];
   });
 
   int numOfBadChannels = (numOfChannels + 1) / 3;
